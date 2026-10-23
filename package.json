@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "node checks/calendar-model.test.cjs && node checks/voice.test.cjs && node checks/app-integration.test.cjs"
+    "test": "node checks/calendar-model.test.cjs && node checks/voice.test.cjs && node checks/app-integration.test.cjs && node checks/ai-planner.test.mjs"
   },
-  "devDependencies": { "jsdom": "26.1.0" }
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
 }

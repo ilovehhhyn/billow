@@ -17,7 +17,7 @@ GitHub Actions tests the app and publishes the contents of `dist/` to GitHub Pag
 ## Features and data
 
 - Drag and resize calendar blocks, guided morning/evening journals, 30-day tracking, and sourced focus tips.
-- “Shape my day” and feedback use deterministic browser-side rules, not an LLM. No API key or backend is required.
+- The default planner and schedule feedback use browser-side rules. Optional AI planning parses your must-do answer through a protected Cloudflare Worker using OpenAI; it requires a server-side API key.
 - Voice input uses the browser's SpeechRecognition API where supported. Browser or provider permissions and network availability apply; typing remains available.
 - Journal and planner data are saved in localStorage on the current browser and origin. They are not committed to this repository or synced to a server.
 - To move existing entries from the original Still Days site, export a backup in Settings there, then import it in Settings on this site. Keep your backup private.
@@ -28,3 +28,17 @@ GitHub Actions tests the app and publishes the contents of `dist/` to GitHub Pag
 `dist/` contains the complete browser app and bundled assets; no build step is needed. `checks/` contains automated tests. `.openai/hosting.json` preserves the original Sites deployment identity and is unused by GitHub Pages.
 
 Third-party notices and licenses are in `dist/vendor/`. The React Bits-inspired animation is adapted into vanilla JavaScript; this app does not require React.
+
+## Connect AI planning
+
+Run `python3 scripts/setup-ai.py` in your own interactive terminal. It signs you into Cloudflare, deploys the backend, and asks for your OpenAI API key with echo disabled. Secrets are uploaded over stdin to Cloudflare's secret store; no key is written to disk or Git.
+
+In the website Settings, enter the deployed Worker URL and the separate private access code printed by the setup. The URL is saved on your device; the access code is kept in sessionStorage and must be entered again in a new browser session. Neither is included in journal backups. Never enter your provider API key in the website.
+
+Only the must-do text, energy, wake/finish time, place, selected date, and fixed commitments are sent when you explicitly click Shape my day. The backend supplies the default rhythm to the model. Fear, excitement, evening entries, and other journal content are excluded. Requests use `store: false`; provider processing and retention policies still apply. The app/backend do not deliberately log prompts.
+
+The backend rejects missing access codes, disallowed origins, invalid inputs, overlapping schedules, changed fixed blocks, and omitted parsed tasks. It has a five-request-per-minute Cloudflare rate limit (per Cloudflare location, not a global spending cap). Set API project spending controls in your provider account. AI requests incur provider charges. A failed request leaves the current schedule unchanged and offers the default planner explicitly.
+
+`backend/wrangler.jsonc` defaults to the `gpt-4.1-mini` alias; change `OPENAI_MODEL` if needed. Re-running setup rotates the private access code. To update backend code without rotating secrets: `npx wrangler@4 deploy --config backend/wrangler.jsonc`. Frontend GitHub Actions does not deploy the backend.
+
+Tests mock provider responses. Live-model behavior, Cloudflare login/deployment, microphone recognition, and real API credentials require interactive verification after setup.
