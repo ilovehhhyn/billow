@@ -42,3 +42,5 @@ The backend rejects missing access codes, disallowed origins, invalid inputs, al
 `backend/wrangler.jsonc` defaults to the `gpt-4.1-mini` alias; change `OPENAI_MODEL` if needed. Re-running setup rotates the private access code. To update backend code without rotating secrets: `npx wrangler@4 deploy --config backend/wrangler.jsonc`. Frontend GitHub Actions does not deploy the backend.
 
 Tests mock provider responses. Live-model behavior, Cloudflare login/deployment, microphone recognition, and real API credentials require interactive verification after setup.
+
+The morning prompt “What do I want to do today?” accepts a typed or dictated brain dump. Shape my day previews checkable tasks with duration estimates and priorities. Accept the list alone, or both the list and schedule. Importing tasks preserves manually added items and existing completion checkmarks; exact matching titles update rather than duplicate.

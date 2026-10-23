@@ -48,9 +48,21 @@ const q=s=>w.document.querySelector(s),edit=(s,v)=>{q(s).value=v;q(s).dispatchEv
 assert.throws(()=>w.AIPlanner.setConfig('https://evil.invalid','x'.repeat(40)));
 assert.throws(()=>w.AIPlanner.setConfig('https://test.workers.dev','sk-'+ 'x'.repeat(40)));
 w.AIPlanner.setConfig('https://test.workers.dev','x'.repeat(40));
+edit('#taskText','Keep my own task');q('#taskForm').dispatchEvent(new w.Event('submit',{cancelable:true,bubbles:true}));
 edit('[data-bind="morning.must"]',input.morning.must);edit('[data-bind="morning.fear"]','PRIVATE UI FEAR');
 let captured;w.fetch=async(url,opts)=>{captured=JSON.parse(opts.body);return Response.json(validatePlan(sample({...input,fixed:captured.fixed}),{...input,fixed:captured.fixed}))};
-q('#generatePlan').click();assert(q('#aiProgress'));await new Promise(r=>setTimeout(r,20));assert(q('#acceptPlan'));assert(w.document.body.textContent.includes('What I heard'));assert(!JSON.stringify(captured).includes('PRIVATE UI FEAR'));q('#acceptPlan').click();
+q('#generatePlan').click();assert(q('#aiProgress'));await new Promise(r=>setTimeout(r,20));assert(q('#acceptPlan'));assert(w.document.body.textContent.includes('Your to-do list'));assert(!JSON.stringify(captured).includes('PRIVATE UI FEAR'));q('#acceptPlan').click();
 let saved=JSON.parse(w.localStorage.getItem('still-days-v1'));assert(Object.values(saved.days).some(d=>d.parsedTasks?.length===7));assert(!JSON.stringify(saved).includes('x'.repeat(40)));
-const before=JSON.stringify(saved);w.fetch=async()=>Response.json({error:'Test provider error'},{status:502});q('#generatePlan').click();await new Promise(r=>setTimeout(r,20));assert.equal(q('#aiProgress').textContent,'Test provider error');assert(!q('#defaultAI').hidden);assert.equal(w.localStorage.getItem('still-days-v1'),before);q('#cancelAI').click();dom.window.close();
-console.log('AI interface checks passed: settings reject provider keys, Shape my day calls the API, private journal fields excluded, review/accept saves tasks, failures preserve the schedule, credentials excluded from backups.');
+let todayEntry=Object.values(saved.days).find(d=>d.parsedTasks?.length===7);
+assert.equal(todayEntry.tasks.length,8);
+assert(todayEntry.tasks.filter(t=>t.source==='ai').every(t=>t.duration>0));
+assert.equal(todayEntry.tasks[1].text,'Research job check-ins');
+assert(w.document.querySelector('.task-estimate').textContent.includes('60 min'));
+q('[data-task="0"]').click();
+const previousSchedule=JSON.stringify(Object.values(JSON.parse(w.localStorage.getItem('still-days-v1')).days).find(d=>d.parsedTasks?.length===7).schedule);
+q('#generatePlan').click();await new Promise(r=>setTimeout(r,20));q('#acceptTasks').click();
+saved=JSON.parse(w.localStorage.getItem('still-days-v1'));todayEntry=Object.values(saved.days).find(d=>d.parsedTasks?.length===7);
+assert.equal(todayEntry.tasks.length,8);assert.equal(todayEntry.tasks[0].done,true);assert.equal(JSON.stringify(todayEntry.schedule),previousSchedule);
+
+const before=w.localStorage.getItem('still-days-v1');w.fetch=async()=>Response.json({error:'Test provider error'},{status:502});q('#generatePlan').click();await new Promise(r=>setTimeout(r,20));assert.equal(q('#aiProgress').textContent,'Test provider error');assert(!q('#defaultAI').hidden);assert.equal(w.localStorage.getItem('still-days-v1'),before);q('#cancelAI').click();dom.window.close();
+console.log('AI interface checks passed: settings reject provider keys, Shape my day calls the API, private journal fields excluded, review/accept populates checkable estimated tasks, repeated import preserves completion without duplicates, list-only leaves schedule intact, failures preserve the schedule, credentials excluded from backups.');
