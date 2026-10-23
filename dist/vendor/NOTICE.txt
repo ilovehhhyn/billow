@@ -1,0 +1,3 @@
+Self-hosted dependencies: GSAP 3.15.0 (https://gsap.com/standard-license/), Lenis 1.3.27 (MIT), Vanta 0.5.24 (MIT), Three.js 0.134.0 (MIT).
+React Bits AnimatedContent reveal treatment adapted to this site's vanilla DOM: David Haz, 2026. MIT + Commons Clause; see REACT-BITS-LICENSE.txt. React Bits is not installed as a React dependency.
+No library sends journals or schedules to an AI service.

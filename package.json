@@ -1,0 +1,9 @@
+{
+  "name": "still-days",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node checks/calendar-model.test.cjs && node checks/voice.test.cjs && node checks/app-integration.test.cjs"
+  },
+  "devDependencies": { "jsdom": "26.1.0" }
+}
